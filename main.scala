@@ -6,14 +6,13 @@ object main {
 
   val r = scala.util.Random         //r.nextFloat
 
-  val L: Int = 10
-  var legitimacy: Double = 0.001
-  var threshold: Double = 0.5
-  val alfa: Int = 0               // 0 or 1
-  val T = 0.5
-  var jailTerm: Int = 1^alfa
-  var civilDens: Double = 0.5
-  var copDens:Double = 0.02
+  val L: Int = 40
+  var legitimacy: Double = 0.8
+  val alfa: Int = 1              // 0 or 1
+  val T: Double = 0.1
+  var jailTerm: Int = 15^alfa
+  var civilDens: Double = 0.7
+  var copDens:Double = 0.04
   var visionCops = 1
   var visionCivils = 1
 
@@ -83,7 +82,7 @@ object main {
         val y = r.nextInt(L)
         if (matrix(x)(y).name == "EMPTY")
         {
-          matrix(x)(y) = new Cop(visionCops)
+          matrix(x)(y) = new Cop(visionCops, jailTerm)
           numOfCops -= 1
         }
       }
@@ -111,10 +110,18 @@ object main {
     {
         for (j <- 0 until L)
         {
-            if (matrix(i)(j).name == " COP " || matrix(i)(j).name == "CIVIL")
+            if (matrix(i)(j).name == " COP ")
             {
               matrix(i)(j).move(matrix, range(i,j,L,matrix(i)(j).vision), i, j)
-            }          
+            }
+            else if (matrix(i)(j).name == "CIVIL")
+            {
+                if (matrix(i)(j).state >=0)
+                  {
+                    matrix(i)(j).move(matrix, range(i,j,L,matrix(i)(j).vision), i, j)
+                  }
+                else  matrix(i)(j).state += 1
+            }
         }
     }
   }
@@ -125,10 +132,18 @@ object main {
     {
         for (j <- 0 until L)
         {
-            if (matrix(i)(j).name == " COP " || matrix(i)(j).name == "CIVIL")
+          if (matrix(i)(j).name == " COP ")
+          {
+            matrix(i)(j).action(matrix, range(i,j,L,matrix(i)(j).vision), i, j, T)
+          }
+          else if (matrix(i)(j).name == "CIVIL")
+          {
+            if (matrix(i)(j).state >=0)
             {
               matrix(i)(j).action(matrix, range(i,j,L,matrix(i)(j).vision), i, j, T)
-            }          
+            }
+            else  matrix(i)(j).state += 1
+          }
         }
     }
   }
@@ -156,14 +171,14 @@ object main {
     printGrievance(matrix, L)
     printState(matrix, L)
 
-    for (i <- 0 until 10)
+    for (i <- 0 until 10000)
     {
       action(matrix)
       move(matrix)
-      printState(matrix, L)
     }
 
     printGrievance(matrix, L)
+    printState(matrix, L)
 
 
   }

@@ -12,7 +12,7 @@ abstract class Agent
   def action(matrix: Array[Array[Agent]], range: List[(Int, Int)], i: Int, j: Int, T:Double): Unit
 }
 
-class Cop (v: Int) extends Agent
+class Cop (v: Int, jailTerm: Int) extends Agent
 {
   override val vision: Int = v
   override val name: String = " COP "
@@ -39,7 +39,7 @@ class Cop (v: Int) extends Agent
     if(activist.size > 0)
     {
       val prisoner = activist(Random.nextInt(activist.size))
-      matrix(prisoner._1)(prisoner._2).state = -1 // jail is -1
+      matrix(prisoner._1)(prisoner._2).state = -1 * scala.util.Random.nextInt(jailTerm) // jail is -1
     }
   }
 }
@@ -72,7 +72,7 @@ class Civil (H: Double, L: Double, R: Double, v: Int) extends Agent
   {  
     //if grievance - risk*arrest probability > T active else quiet
     //arrest probability = 1 - exponent(-k* [cops/active agents (including me)] <- in vision range)
-    val k = log(10)
+    val k = 2.3
     val C = range.filter(f => matrix(f._1)(f._2).name == "COP").size
     val A = 1+range.filter(f => matrix(f._1)(f._2).name == "CIVIL").filter(f => matrix(f._1)(f._2).state == 1).size
     val P = 1.0 - exp(-k*(1.0*C/A))
