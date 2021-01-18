@@ -4,8 +4,8 @@ import scala.language.postfixOps
 import java.io._
 
 object main {
-
-  val r = scala.util.Random         //r.nextFloat
+  var s = System.currentTimeMillis
+  val r = new scala.util.Random(s)         //r.nextFloat
 
   val L: Int = 40
   var legitimacy: Double = 0.82
@@ -14,8 +14,8 @@ object main {
   var JailTerm: Int = 30
   var civilDens: Double = 0.7
   var copDens:Double = 0.04
-  var visionCops = 1
-  var visionCivils = 1
+  var visionCops = 7
+  var visionCivils = 7
 
   def emptyMatrix(matrix: Array[Array[Agent]],  L: Int): Unit =
     {
@@ -95,7 +95,7 @@ object main {
     {
         for (j <- 0 until L)
         {
-            if (matrix(i)(j).name == "COP")
+            if (matrix(i)(j).name == " COP ")
             {
               copsList :+= (i,j)
             }
@@ -174,7 +174,7 @@ object main {
           if (matrix(i)(j).name=="CIVIL")
           {
             if (matrix(i)(j).state==0)  quiet += 1
-            else if (matrix(i)(j).state==(-1))  prisoners += 1
+            else if (matrix(i)(j).state<=(-1))  prisoners += 1
             else if (matrix(i)(j).state==1)  rebels += 1
           }
         }
