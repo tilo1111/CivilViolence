@@ -1,16 +1,17 @@
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
 import scala.language.postfixOps
+import java.io._
 
 object main {
 
   val r = scala.util.Random         //r.nextFloat
 
   val L: Int = 40
-  var legitimacy: Double = 0.8
+  var legitimacy: Double = 0.89
   val alfa: Int = 1              // 0 or 1
   val T: Double = 0.1
-  var jailTerm: Int = 15^alfa
+  var JailTerm: Int = 30
   var civilDens: Double = 0.7
   var copDens:Double = 0.04
   var visionCops = 1
@@ -59,7 +60,6 @@ object main {
     println()
   }
 
-
   def fillMatrix(matrix: Array[Array[Agent]],  L: Int, civilDens: Double, copDens: Double): Unit =
     {
       var numOfCops: Int = (L*L*copDens).toInt
@@ -82,7 +82,7 @@ object main {
         val y = r.nextInt(L)
         if (matrix(x)(y).name == "EMPTY")
         {
-          matrix(x)(y) = new Cop(visionCops, jailTerm)
+          matrix(x)(y) = new Cop(visionCops, JailTerm)
           numOfCops -= 1
         }
       }
@@ -134,13 +134,13 @@ object main {
         {
           if (matrix(i)(j).name == " COP ")
           {
-            matrix(i)(j).action(matrix, range(i,j,L,matrix(i)(j).vision), i, j, T)
+            matrix(i)(j).action(matrix, range(i,j,L,matrix(i)(j).vision), i, j, T, JailTerm)
           }
           else if (matrix(i)(j).name == "CIVIL")
           {
             if (matrix(i)(j).state >=0)
             {
-              matrix(i)(j).action(matrix, range(i,j,L,matrix(i)(j).vision), i, j, T)
+              matrix(i)(j).action(matrix, range(i,j,L,matrix(i)(j).vision), i, j, T, JailTerm)
             }
             else  matrix(i)(j).state += 1
           }
@@ -160,7 +160,28 @@ object main {
     val neighbours = vertical ++ horizontal
     return neighbours 
   }
-  
+
+  def countPopulation(matrix: Array[Array[Agent]], L: Int): List[Int] =
+    {
+      var rebels: Int = 0
+      var quiet: Int = 0
+      var prisoners: Int = 0
+
+      for (i <- 0 until L)
+      {
+        for (j <- 0 until L)
+        {
+          if (matrix(i)(j).name=="CIVIL")
+          {
+            if (matrix(i)(j).state==0)  quiet += 1
+            else if (matrix(i)(j).state==(-1))  prisoners += 1
+            else if (matrix(i)(j).state==1)  rebels += 1
+          }
+        }
+      }
+      return List(rebels, quiet, prisoners)
+    }
+
 
   def main(args:Array[String]): Unit =
   {
@@ -168,18 +189,24 @@ object main {
     var matrix = Array.ofDim[Agent](L,L)
     emptyMatrix(matrix, L)
     fillMatrix(matrix, L, civilDens, copDens)
-    printGrievance(matrix, L)
-    printState(matrix, L)
+    //printGrievance(matrix, L)
+    //printState(matrix, L)
 
-    for (i <- 0 until 10000)
+    val file = new File("popintime.txt")
+    val bw = new BufferedWriter(new FileWriter(file))
+
+    for (mcs <- 0 until 200)
     {
-      action(matrix)
+      var pop = countPopulation(matrix, L)
       move(matrix)
+      action(matrix)
+
+      bw.write(mcs + " " + pop(0) + " " + pop(1) + " " + pop(2) + "\n")
     }
 
-    printGrievance(matrix, L)
-    printState(matrix, L)
-
+    //printGrievance(matrix, L)
+    //printState(matrix, L)
+    bw.close()
 
   }
 }
